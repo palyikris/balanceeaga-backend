@@ -327,7 +327,7 @@ class CategoryViewSet(viewsets.ModelViewSet):
 
 
 from decimal import Decimal
-from django.db.models import Sum, F, Value, Case, When, DecimalField
+from django.db.models import Sum, F, Value, Case, When, DecimalField, Count
 from django.db.models.functions import ExtractMonth, ExtractYear
 from rest_framework.decorators import api_view, permission_classes
 from rest_framework.permissions import IsAuthenticated
@@ -645,3 +645,56 @@ def spending_patterns(request):
         )
 
     return Response({"by_weekday": result})
+
+
+@api_view(["GET"])
+def category_coverage(request):
+    user_id = get_user_id(request)
+    access_token = get_access_token(request)
+
+    if access_token is None or user_id is None:
+        return Response({"detail": "Unauthorized"}, status=status.HTTP_401_UNAUTHORIZED)
+
+    total_transactions = Transaction.objects.filter(user_id=user_id).count()
+    categorized_transactions = Transaction.objects.filter(
+        user_id=user_id, category__isnull=False
+    ).count()
+
+    coverage_percentage = (
+        (categorized_transactions / total_transactions) * 100
+        if total_transactions > 0
+        else 0
+    )
+
+    return Response(
+        {
+            "total_transactions": total_transactions,
+            "categorized_transactions": categorized_transactions,
+            "coverage_percentage": round(coverage_percentage, 2),
+        }
+    )
+
+
+@api_view(["GET"])
+def avg_expense_per_category(request):
+    user_id = get_user_id(request)
+    access_token = get_access_token(request)
+
+    if access_token is None or user_id is None:
+        return Response({"detail": "Unauthorized"}, status=status.HTTP_401_UNAUTHORIZED)
+
+    qs = (
+        Transaction.objects.filter(user_id=user_id, category__type="expense")
+        .values("category__name")
+        .annotate(avg_amount=Sum("amount") / Count("id"))
+        .order_by("category__name")
+    )
+
+    data = [
+        {
+            "category": r["category__name"] or "Egyéb",
+            "average_expense": float(r["avg_amount"] or 0),
+        }
+        for r in qs
+    ]
+    return Response(data)

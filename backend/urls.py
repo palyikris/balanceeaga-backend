@@ -29,6 +29,8 @@ from ingestion.views import (
     monthly_balance,
     category_expenses,
     spending_patterns,
+    category_coverage,
+    avg_expense_per_category,
 )
 from drf_spectacular.views import (
     SpectacularAPIView,
@@ -59,6 +61,14 @@ urlpatterns = [
     ),
     path(
         "api/dashboard/spending-patterns", spending_patterns, name="spending-patterns"
+    ),
+    path(
+        "api/dashboard/category-coverage", category_coverage, name="category-coverage"
+    ),
+    path(
+        "api/dashboard/avg-expense-per-category",
+        avg_expense_per_category,
+        name="avg-expense-per-category",
     ),
     # OpenAPI schema (JSON/YAML)
     path("api/schema/", SpectacularAPIView.as_view(), name="schema"),
