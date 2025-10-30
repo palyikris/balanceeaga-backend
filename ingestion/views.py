@@ -273,6 +273,19 @@ class TransactionViewSet(viewsets.ReadOnlyModelViewSet):
         serializer = self.get_serializer(instance)
         return Response(serializer.data, status=status.HTTP_200_OK)
 
+    @action(detail=False, methods=["get"], url_path="available-years-and-months")
+    def available_years_and_months(self, request):
+        txns = self.get_queryset()
+        dates = txns.exclude(booking_date=None).dates("booking_date", "month")
+        result = {}
+        for d in dates:
+            year = d.year
+            month = d.month
+            if year not in result:
+                result[year] = []
+            result[year].append(month)
+        return Response(result)
+
 
 class RuleViewSet(viewsets.ModelViewSet):
     queryset = Rule.objects.all().order_by("-id")

@@ -32,6 +32,12 @@ from ingestion.views import (
     category_coverage,
     avg_expense_per_category,
 )
+
+from django.conf import settings
+from django.conf.urls.static import static
+
+from ingestion.reports.views import monthly_report, report_history
+
 from drf_spectacular.views import (
     SpectacularAPIView,
     SpectacularSwaggerView,
@@ -70,6 +76,9 @@ urlpatterns = [
         avg_expense_per_category,
         name="avg-expense-per-category",
     ),
+    # Report endpoint
+    path("api/reports/monthly", monthly_report, name="monthly-report"),
+    path("api/reports/history", report_history, name="report-history"),
     # OpenAPI schema (JSON/YAML)
     path("api/schema/", SpectacularAPIView.as_view(), name="schema"),
     # Swagger UI
@@ -81,3 +90,6 @@ urlpatterns = [
     # Redoc (opcionális)
     path("api/redoc/", SpectacularRedocView.as_view(url_name="schema"), name="redoc"),
 ]
+
+if settings.DEBUG:
+    urlpatterns += static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)

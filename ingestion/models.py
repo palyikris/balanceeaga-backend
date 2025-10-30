@@ -122,3 +122,31 @@ class Category(models.Model):
 
     def __str__(self):
         return self.name
+
+
+# backend/reports/models.py
+import uuid
+from django.db import models
+
+
+class Report(models.Model):
+    id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
+    user_id = models.CharField(max_length=64)
+    year = models.PositiveIntegerField()
+    month = models.PositiveIntegerField()
+
+    storage_path = models.TextField(unique=True)  # relative to MEDIA_ROOT
+    original_name = models.CharField(max_length=128)
+    size_bytes = models.BigIntegerField()
+
+    created_at = models.DateTimeField(auto_now_add=True)  # generation timestamp
+
+    class Meta:
+        db_table = "reports"
+        indexes = [
+            models.Index(fields=["user_id"]),
+            models.Index(fields=["year", "month"]),
+        ]
+
+    def __str__(self):
+        return f"{self.year}-{self.month:02d} report for {self.user_id}"

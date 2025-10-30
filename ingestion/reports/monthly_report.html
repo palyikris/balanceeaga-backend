@@ -1,0 +1,187 @@
+<!DOCTYPE html>
+<html lang="hu">
+<head>
+  <meta charset="UTF-8" />
+  <title>Monthly Financial Report</title>
+  <style>
+    :root {
+      --graphite: #1C1C1C;
+      --cool-gray: #E5E5E5;
+      --off-white: #FFFFFF;
+      --lime-neon: #A3FF12;
+      --electric-pink: #FF3CAC;
+      --teal-blue: #00B3B3;
+    }
+
+    body {
+      font-family: "Inter", sans-serif;
+      background: var(--off-white);
+      color: var(--graphite);
+      padding: 2.5rem 3rem;
+      margin: 0;
+      line-height: 1.6;
+    }
+
+    header {
+      text-align: center;
+      margin-bottom: 2rem;
+    }
+
+    header h1 {
+      font-size: 1.9rem;
+      font-weight: 700;
+      color: var(--graphite);
+      margin: 0;
+    }
+
+    .period {
+      font-size: 1rem;
+      color: var(--teal-blue);
+      margin-top: 0.25rem;
+    }
+
+    .accent-bar {
+      height: 4px;
+      width: 160px;
+      background: linear-gradient(to right, var(--lime-neon), var(--electric-pink));
+      border-radius: 2px;
+      margin: 1rem auto 1.5rem;
+    }
+
+    .summary {
+      background: linear-gradient(135deg, #fafafa, #f3f3f3);
+      border: 1px solid #ddd;
+      border-radius: 1rem;
+      padding: 1.2rem 1.8rem;
+      margin: 0 auto 2.5rem;
+      max-width: 600px;
+      box-shadow: 0 3px 12px rgba(0, 0, 0, 0.05);
+    }
+
+    .summary-row {
+      display: flex;
+      justify-content: space-between;
+      margin: 0.4rem 0;
+      font-weight: 600;
+      font-size: 1rem;
+    }
+
+    .income { color: var(--teal-blue); }
+    .expense { color: var(--electric-pink); }
+    .balance { color: var(--graphite); }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 0.9rem;
+      margin-top: 1rem;
+      border-radius: 0.75rem;
+      overflow: hidden;
+      box-shadow: 0 2px 12px rgba(0,0,0,0.06);
+    }
+
+    thead th {
+      background: var(--graphite);
+      color: var(--off-white);
+      font-weight: 600;
+      text-transform: uppercase;
+      padding: 0.75rem 1rem;
+      letter-spacing: 0.5px;
+    }
+
+    tbody td {
+      padding: 0.7rem 1rem;
+      border-bottom: 1px solid #eaeaea;
+    }
+
+    tbody tr:nth-child(odd) td {
+      background: #fafafa;
+    }
+
+    tbody tr:nth-child(even) td {
+      background: #ffffff;
+    }
+
+    tbody tr:hover td {
+      background: #f2f2f2;
+      transition: background 0.2s ease-in-out;
+    }
+
+    .positive {
+      color: var(--teal-blue);
+      font-weight: 600;
+    }
+
+    .negative {
+      color: var(--electric-pink);
+      font-weight: 600;
+    }
+
+    footer {
+      text-align: right;
+      font-size: 0.8rem;
+      color: #777;
+      margin-top: 2.5rem;
+      border-top: 1px solid #ddd;
+      padding-top: 1rem;
+    }
+
+    @media print {
+      body {
+        padding: 1.5rem;
+        background: white;
+      }
+      .summary, table {
+        box-shadow: none;
+      }
+    }
+  </style>
+</head>
+<body>
+  <header>
+    <h1>Havi pénzügyi jelentés</h1>
+    <div class="period">{{ year }}-{{ month|add:"0"|slice:"-2:" }}</div>
+    <div class="accent-bar"></div>
+  </header>
+
+  <section class="summary">
+    <div class="summary-row">
+      <span>Bevétel:</span>
+      <span class="income">{{ total_income|floatformat:0 }} HUF</span>
+    </div>
+    <div class="summary-row">
+      <span>Kiadás:</span>
+      <span class="expense">{{ total_expense|floatformat:0 }} HUF</span>
+    </div>
+    <div class="summary-row">
+      <span>Egyenleg:</span>
+      <span class="balance">{{ net_balance|floatformat:0 }} HUF</span>
+    </div>
+  </section>
+
+  <table>
+    <thead>
+      <tr>
+        <th>Kategória</th>
+        <th>Típus</th>
+        <th>Összeg (HUF)</th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for row in categories %}
+      <tr>
+        <td>{{ row.category__name }}</td>
+        <td>{{ row.category__type|title }}</td>
+        <td class="{% if row.total < 0 %}negative{% else %}positive{% endif %}">
+          {{ row.total|floatformat:0 }}
+        </td>
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+
+  <footer>
+    Generálás dátuma: {{ generated_at }}
+  </footer>
+</body>
+</html>
